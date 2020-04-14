@@ -1,0 +1,41 @@
+<html>
+<body>
+	<h2>Amazon</h2>
+	<h3>Please input order details</h3>
+	<div id="entries"> 
+		<form action= "{{ url_for('addorder') }}"  method = "POST" name ="myform">
+		Order ID: <input type="text" name="id"/><br><br>
+		Sender Name: <input type="text" name="name"/><br><br>
+		Sender Address: <input type="text" name="add"/><br><br>
+		Sender Contact: <input type="number" name="scon"/><br><br>
+		Receiver name: <input type="text" name="rname"/><br><br>
+		Receiver Address: <input type="text" name="radd"/><br><br>
+		Receiver Contact: <input type="number" name="rcon"/><br><br>
+		Postal Code: <input type="text" name="pos"/><br><br>
+
+		<input type="submit" value="submit" onclick="collect(this.form)"/>
+		</form>
+	</div>
+	<p>You can copy the JSON code below</p>
+	<hr>
+	<div id="results"></div>
+	<div id="result2"></div>
+
+	<script type="text/javascript">
+	function collect(frm) { 
+	document.getElementById("results").innerHTML+="{\"order_id\": \""+frm.id.value+"\","+"<br>"+
+	"\"sender_name\": \""+frm.name.value+"\","+"<br>"+
+	"\"sender_address\": \""+frm.add.value+"\","+"<br>"+
+	"\"sender_contact\": "+frm.scon.value+","+"<br><br>"+
+	"\"receiver_name	\": \""+frm.rname.value+"\","+"<br>"+
+	"\"receiver_address\": \""+frm.radd.value+"\","+"<br>"+
+	"\"receiver_contact\": "+frm.rcon.value+","+"<br>"+
+	"\"postal_code\": "+frm.pos.value+"<br>"+
+	"}"+"<hr>"
+	frm.reset();
+	}
+
+	
+	</script>
+</body>
+</html>
