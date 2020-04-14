@@ -1,0 +1,139 @@
+import os
+from flask import Flask, render_template, request, flash, session, redirect, url_for
+from flask_wtf import form
+from wtforms import TextField, IntegerField, TextAreaField, SubmitField, RadioField, SelectField
+from wtforms import validators, ValidationError
+import pymysql
+import cx_Oracle
+import json
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'development key'
+db = pymysql.connect('localhost', 'root', '', 'amazon')
+'''conn = cx_Oracle.connect('G1_team03/ceG1/@144.214.177.102/xe')'''
+
+
+@app.route('/index', methods=['POST', 'GET'])
+def index():
+    return render_template('index.html')
+
+
+@app.route('/amazon_login', methods=['POST', 'GET'])
+def amazon_login():
+    return render_template('amazon_login.html')
+
+
+@app.route('/FedEx_login', methods=['POST', 'GET'])
+def FedEx_login():
+    return render_template('FedEx_login.html')
+
+
+@app.route('/amazonlogining', methods=['POST', 'GET'])
+def amazonlogining():
+    if request.method == 'POST':
+        a1 = request.form['Amazon']
+        a2 = request.form['Password']
+        Amazon = 'Amazon';
+        Password = 'Password';
+
+        if a1 != Amazon or a2 != Password:
+            msg = 'Wrong username or password.'
+            return render_template('sent.html', msg=msg)
+        else:
+            return render_template('test00002.html')
+
+
+@app.route('/fedexlogining', methods=['POST', 'GET'])
+def fedexlogining():
+    if request.method == 'POST':
+        a1 = request.form['FedEx']
+        a2 = request.form['Password']
+        FedEx = 'FedEx';
+        Password = 'Password';
+
+        if a1 != FedEx or a2 != Password:
+            msg = 'Wrong username or password.'
+            return render_template('sent.html', msg=msg)
+        else:
+            return render_template('test00002.html')
+
+
+@app.route('/addorder', methods=['POST', 'GET'])
+def addorder():
+    if request.method == "POST":
+        try:
+            a1 = request.form['id']
+            a2 = request.form['name']
+            a3 = request.form['add']
+            a4 = request.form['scon']
+            a5 = request.form['rname']
+            a6 = request.form['radd']
+            a7 = request.form['rcon']
+            a8 = request.form['pos']
+
+            cursor = db.cursor()
+            sql = '''
+			INSERT INTO order (order_id, sender_name, sender_address, sender_contact, receiver_name, receiver_adddress, receiver_contact, postal_code)
+			'''
+            cursor.execute(sql % (a1, a2, a3, a4, a5, a6, a7, a8))
+
+            db.commit()
+            msg = "Order Added!"
+        except:
+            db.rollback()
+            msg = "Some Error Occuped!  >.<"
+
+        finally:
+            return render_template("sent.html", msg=msg)
+            db.close()
+
+
+@app.route('/test_amazon', methods=['POST', 'GET'])
+def test_amazon():
+    return render_template('test_amazon.html')
+
+
+@app.route('/AddOrder', methods=['POST', 'GET'])
+def AddOrder():
+    if request.methods == "POST":
+        try:
+            order_Id = request.form['order_Id']
+            item_id = request.form['item_id']
+            item_name = request.form['item_name']
+            item_desciption = request.form['item_desciption']
+            item_qty = request.form['item_qty']
+
+            cursor = con.cursor()
+            sql = '''
+			INSERT INTO FEDEX_ORDER_DETAIL (:ORDER_ID, :ITEM_ID, :ITEM_NAME,: ITEM_DESCRIPTION, :ORDER_QUANTITY) VALUES ('%s', '%s', '%s', '%s', '%s')
+			'''
+
+            cursor.execute(sql, ORDER_ID=order_id, ITEM_ID=item_id, ITEM_NAME=item_name,
+                           ITEM_DESCRIPTION=item_desciption, ORDER_QUANTITY=item_qty)
+
+            con.commit()
+            msg = "order complete"
+
+
+        except:
+            con.rollback()
+            msg = "Some Error Occuped!... "
+        finally:
+            return render_template('sent.html', msg=msg)
+            con.close()
+
+
+@app.route('/test_fedex', methods=['POST', 'GET'])
+def test_fedex():
+    cursor = con.cursor()
+    sql = ("SELECT * FROM ")
+    cursor.execute(sql)
+    con.commit()
+    rows = cursor.fetchall()
+
+    return render_template('test_fedex.html', rows=rows)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
