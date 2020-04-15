@@ -25,9 +25,9 @@ def amazon_login():
 def FedEx_login():
 	return render_template('FedEx_login.html')
 
-@app.route('/test00002', methods = ['POST' , 'GET'])
-def test00002():
-	return render_template('test00002.html')
+@app.route('/amazon_addorder', methods = ['POST' , 'GET'])
+def amazon_addorder():
+	return render_template('amazon_addorder.html')
 
 @app.route('/amazonlogining', methods = ['POST' , 'GET'])
 def amazonlogining():
@@ -41,7 +41,7 @@ def amazonlogining():
 			msg = 'Wrong username or password.'
 			return render_template('sent.html', msg = msg)
 		else:
-			return	render_template('test00002.html')
+			return  render_template('amazon_addorder.html')
 
 @app.route('/fedexlogining', methods = ['POST' , 'GET'])
 def fedexlogining():
@@ -53,43 +53,120 @@ def fedexlogining():
 
 		if a1 != FedEx or a2 != Password:
 			msg = 'Wrong username or password.'
-			return render_template('sent.html', msg = msg)
+			return render_template('sent2.html', msg = msg)
 		else:
-			return	render_template('test00002.html')
+			cursor = db.cursor()
+			sql = ("SELECT * FROM amazon_order ORDER BY order_id ASC")
+			cursor.execute(sql)
+			db.commit()
+			rows = cursor.fetchall()
+			print("Received the following order(s)")
+			print("-----------------------------------------------------------------------")
+			for row in rows:
+				x = {
+					"order_id": row[0],
+					"sender_name":  row[1],
+					"sender_address":  row[2],
+					"sender_contact":  row[3],
+					"receiver_name":  row[4],
+					"receiver_address":  row[5],
+					"receiver_contact":  row[6],
+					"postal_code":  row[7]
+				}
+				y = json.dumps(x)
+				print(y)
+				print("-----------------------------------------------------------------------")
+			return render_template('fedex_vieworder.html', rows = rows)
 
 @app.route('/addorder', methods = ['POST' , 'GET'])
 def addorder():
-	if request.method == "POST":
+	if request.method == 'POST':
 		try:
-			a1 = request.form['id']
-			a2 = request.form['name']
-			a3 = request.form['add']
-			a4 = request.form['scon']
-			a5 = request.form['rname']
-			a6 = request.form['radd']
-			a7 = request.form['rcon']
-			a8 = request.form['pos']
+			oid = request.form['id']
+			name = request.form['name']
+			add = request.form['add']
+			scon = request.form['scon']
+			rname = request.form['rname']
+			radd = request.form['radd']
+			rcon = request.form['rcon']
+			pos = request.form['pos']
 
 			cursor = db.cursor()
 			sql = '''
-			INSERT INTO mytable (order_id, sender_name, sender_address, sender_contact, receiver_name, receiver_address, receiver_contact, postal_code) VALUES ( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+			INSERT INTO amazon_order (order_id, sender_name, sender_address, sender_contact, receiver_name, receiver_address, receiver_contact, postal_code) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')
 			'''
-			cursor.execute(sql%(a1, a2, a3, a4, a5, a6, a7, a8) )
-
+			cursor.execute(sql%(oid,name,add,scon,rname,radd,rcon,pos) )
+			
 			db.commit()
-			msg = "Order Added!"
+						 
+			x = {
+			'order_id': oid,
+			"sender_name": name,
+			"sender_address": add,
+			"sender_contact": scon,
+			"receiver_name": rname,
+			"receiver_address": radd,
+			"receiver_contact": rcon,
+			"postal_code": pos
+			}
+
+			y = json.dumps(x)
+			print(y)
+			print("-----------------------------------------------------------------------")
+			print('Order sent')
+			msg = "You have add one order, "+"Please check the json string on console"
 		except:
 			db.rollback()
-			msg = "Some Error Occuped!  >.<"
+			msg = "Please input right value"
 		finally:
 			return render_template("sent.html",msg = msg)
 			db.close()
 		
+@app.route('/fedex_vieworder', methods = ['POST', 'GET']) 
+def fedex_vieworder():
+	cursor = db.cursor()
+	sql = ("SELECT * FROM amazon_order ORDER BY order_id ASC")
+	cursor.execute(sql)
+	db.commit()
+	rows = cursor.fetchall()
+	print("Received the following order(s)")
+	print("-----------------------------------------------------------------------")
+	for row in rows:
+		x = {
+			"order_id": row[0],
+				"sender_name":  row[1],
+				"sender_address":  row[2],
+				"sender_contact":  row[3],
+				"receiver_name":  row[4],
+				"receiver_address":  row[5],
+				"receiver_contact":  row[6],
+				"postal_code":  row[7]
+			}
+		y = json.dumps(x)
+		print(y)
+		print("-----------------------------------------------------------------------")
+	return render_template('fedex_vieworder.html', rows = rows)
 
+@app.route('/completeorder', methods = ['POST' , 'GET'])
+def completeorder():
+	if request.method == 'POST':
+
+			completeID = request.form['complete']
+
+			cursor = db.cursor()
+			sql = ("DELETE FROM amazon_order WHERE order_id = '"+completeID+"' ")
+			cursor.execute(sql)
+			db.commit()
+			print(sql)
+
+			msg = "success"
+			return render_template("received.html",msg = msg)
+			db.close()
 
 @app.route('/test_amazon', methods = ['POST', 'GET']) 
 def test_amazon():
 	return render_template('test_amazon.html')
+
 
 
 @app.route('/test_fedex', methods = ['POST', 'GET']) 
